@@ -1,0 +1,9 @@
+# Decisions and limits
+
+Django was chosen for session/CSRF protection, forms, migrations and transactional ORM. PostgreSQL is required: row locks, skip-locked claims and race behavior are tested there, with no SQLite substitute. HTMX 2.0.4 is vendored locally with its BSD license; normal forms work without it. Polling runs every three seconds while queued/running and stops at terminal status. Completed findings require full-page refresh.
+
+The deterministic provider intentionally performs one pass. Four steps, eight admitted tool slots, 32 KiB source input, 8 KiB output, 120-second deadline and 2,000-unit call reservations are builder caps, not inherited measurements or billing. Cancellation fences publication but cannot interrupt arbitrary synchronous Python already executing. A stuck provider can occupy its worker; another worker may reclaim after lease expiry. No network/provider timeout claim is made because only an in-process fixture is enabled.
+
+Timeline caps 400 facts and does not ingest arbitrary files, production telemetry or network sources. Three source-read slots are reserved per fixture attempt. Timestamp skew is displayed, not statistically corrected. The fixture hypothesis is deliberately weakened by continued post-rollback errors; the product does not establish root cause.
+
+One active organization per user simplifies membership selection. This is local demonstration authentication, not hosted multi-factor/SSO administration. No external credentials, paid calls, deployment or public exposure were used. Compose is illustrative; source-built private PostgreSQL supplied actual evidence.

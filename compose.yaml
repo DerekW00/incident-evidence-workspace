@@ -1,0 +1,14 @@
+name: incident-evidence-workspace
+services:
+  postgres:
+    image: postgres:16.15
+    environment:
+      POSTGRES_DB: incident_evidence
+      POSTGRES_USER: dw
+      POSTGRES_PASSWORD: local-synthetic-only
+    ports:
+      - "127.0.0.1:15533:5432"
+    volumes:
+      - incident_pg:/var/lib/postgresql/data
+volumes:
+  incident_pg:
