@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from typing import Callable
-from .tools import Scope, evidence, search_logs, list_deployments
+from .tools import Scope, SourceBundle, bounded_sources, search_logs, list_deployments
 from .timeline import build_timeline
 
 
@@ -20,10 +20,10 @@ class Result:
     usage: dict[str, int] | None
 
 
-Provider = Callable[[Scope], str]
+Provider = Callable[[SourceBundle], str]
 
 
-def parse_result(raw: str, scope: Scope) -> Result:
+def parse_result(raw: str, scope: Scope | SourceBundle) -> Result:
     if len(raw.encode()) > 8192:
         raise ValueError("Provider output exceeds 8 KiB")
     try:
@@ -33,7 +33,7 @@ def parse_result(raw: str, scope: Scope) -> Result:
             or not {"observations", "hypotheses"} <= data.keys()
         ):
             raise ValueError("Both observations and hypotheses are required")
-        allowed = set(evidence(scope).values_list("id", flat=True))
+        allowed = {row.id for row in bounded_sources(scope).sources}
         findings = []
         for key in ["observations", "hypotheses"]:
             rows = data.get(key, [])
@@ -81,7 +81,8 @@ def parse_result(raw: str, scope: Scope) -> Result:
         raise ValueError("Malformed fixture response") from exc
 
 
-def fixture_result(scope: Scope) -> str:
+def fixture_result(scope: Scope | SourceBundle) -> str:
+    scope = bounded_sources(scope)
     timeline = build_timeline(scope)
     rows = timeline["evidence"]
     observations = [
@@ -89,13 +90,21 @@ def fixture_result(scope: Scope) -> str:
         for row in rows[:8]
     ]
     deployments = [r.id for r in list_deployments(scope)]
-    contrary = [r.id for r in search_logs(scope, "after rollback", 100)]
+    logs = search_logs(scope, "", 100)
+    spike = [r.id for r in logs if "error" in r.text.lower() or "5xx" in r.text.lower()]
+    contrary = [
+        r.id for r in logs if r.id in spike and "after rollback" in r.text.lower()
+    ]
     hypotheses = []
-    if deployments:
+    if deployments and spike:
         hypotheses = [
             {
-                "text": "Deployment timing correlates with the spike; continued errors after rollback weaken causality. Root cause remains unconfirmed.",
-                "citations": deployments,
+                "text": (
+                    "A deployment and error observations coexist in the selected window. A scoped log reports errors after rollback, weakening the deployment-cause hypothesis. Root cause remains unconfirmed."
+                    if contrary
+                    else "A deployment and error observations coexist in the selected window. This supports only a working hypothesis; root cause remains unconfirmed."
+                ),
+                "citations": deployments + spike,
                 "contradictions": contrary,
                 "confidence": "weakened" if contrary else "unconfirmed",
             }

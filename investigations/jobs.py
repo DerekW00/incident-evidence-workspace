@@ -4,9 +4,8 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 from .models import Investigation, Job, Event, Membership, Observation, Hypothesis
-from .tools import Scope
+from .tools import Scope, prepare_sources
 from .provider import Provider, fixture_result, parse_result
-from .timeline import build_timeline
 
 
 def append_event(run: Investigation, text: str) -> None:
@@ -87,8 +86,8 @@ def execute(job_id: int, token: str, provider: Provider = fixture_result) -> Non
         if not valid(run, job, token):
             return
         scope = Scope(run.org_id, run.incident_id, run.start, run.end)
-        timeline = build_timeline(scope)
-        size = sum(len(e.text.encode()) for e in timeline["evidence"])
+        bundle = prepare_sources(scope)
+        size = bundle.input_bytes
         if run.steps >= 4 or run.tools + 3 > 8 or size > 32768:
             run.status = "failed"
             run.failure = "Input, step or tool budget exhausted"
@@ -101,7 +100,7 @@ def execute(job_id: int, token: str, provider: Provider = fixture_result) -> Non
         run.save()
     # Provider is outside locks. Cancellation can commit while it runs.
     try:
-        result = parse_result(provider(scope), scope)
+        result = parse_result(provider(bundle), bundle)
         failure = ""
     except Exception as exc:
         result = None

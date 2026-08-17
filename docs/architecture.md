@@ -11,3 +11,9 @@ Events are persisted under the run lock with a unique monotonically increasing p
 Review locks the run, compares the submitted revision, appends Review and Brief, increments revision and appends activity atomically. A stale tab receives HTTP 409. Brief snapshots preserve uncertainty and reviewer text. No model or reviewer action changes infrastructure.
 
 Fixture execution is one bounded source timeline pass, one fixture response, and at most 20 findings per category. Source timeline is capped at 400 records; logs/deployments tools cap at 100. The fixed fixture workflow performs three scoped reads: timeline, deployment lookup and bounded log search. Three tool slots are admitted before each fixture call; these are guard reservations, not billing evidence.
+
+## Round-one evidence boundary correction
+
+Before provider admission the server prepares one immutable SourceBundle containing at most400 ordered sources, full-window source-kind metadata and total count. The 32KiB guard covers the compact UTF-8 source payload including IDs, timestamps, skew and metadata. The provider receives this bundle, never Scope or ORM query authority. Timeline, deployment/log tool views and citation validation reuse it without database reads. Findings may cite only its displayed sources. Sources beyond400 are explicitly omitted, cannot supply a hypothesis and cannot be cited; their source kinds are disclosed separately from truly missing telemetry.
+
+Deployment-only windows generate observations without a correlation hypothesis. A correlation hypothesis requires a scoped deployment and scoped error log. Post-rollback narrative and contradiction UI appear only with scoped error logs explicitly reporting post-rollback errors. This is a fixture interpretation of source text, not independent causality verification.

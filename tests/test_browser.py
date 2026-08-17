@@ -33,6 +33,13 @@ def test_saved_timeline_review_and_cancellation():
         assert page.get_by_role(
             "link", name="Download saved brief", exact=False
         ).is_visible()
+        with page.expect_download() as download_event:
+            page.get_by_role("link", name="Download saved brief", exact=False).click()
+        downloaded = download_event.value
+        assert downloaded.suggested_filename == "synthetic-incident-brief.txt"
+        assert (
+            "Deployment correlation is weakened" in Path(downloaded.path()).read_text()
+        )
         dest = Path(
             "/Users/dw/code/portfolio-python/python-evidence/incident-evidence-workspace"
         )
