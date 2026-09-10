@@ -31,6 +31,8 @@ class Source:
     text: str
     at: datetime
     skew_seconds: int
+    event_code: str = ""
+    error_count: int | None = None
 
 
 @dataclass(frozen=True)
@@ -45,7 +47,15 @@ class SourceBundle:
             json.dumps(
                 {
                     "sources": [
-                        [r.id, r.kind, r.text, r.at.isoformat(), r.skew_seconds]
+                        [
+                            r.id,
+                            r.kind,
+                            r.text,
+                            r.at.isoformat(),
+                            r.skew_seconds,
+                            r.event_code,
+                            r.error_count,
+                        ]
                         for r in self.sources
                     ],
                     "total": self.total,
@@ -73,7 +83,8 @@ def prepare_sources(scope: Scope) -> SourceBundle:
     total = rows.count()
     kinds = tuple(rows.order_by().values_list("kind", flat=True).distinct())
     sources = tuple(
-        Source(r.id, r.kind, r.text, r.at, r.skew_seconds) for r in rows[:400]
+        Source(r.id, r.kind, r.text, r.at, r.skew_seconds, r.event_code, r.error_count)
+        for r in rows[:400]
     )
     return SourceBundle(sources, total, kinds)
 

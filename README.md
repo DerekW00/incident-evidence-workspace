@@ -27,3 +27,5 @@ make browser
 ```
 
 The VPS verification sources `/Users/dw/code/portfolio-python/execution/runtime-env.sh`; PostgreSQL has TCP disabled and uses a private Unix socket. Browser tests use only loopback. See docs for limits, decisions, provenance and measured evidence.
+
+After upgrading an existing synthetic checkout to structured event facts, run migrate then seed_demo again before evaluate/browser. Migration intentionally leaves preexisting facts unknown; seed_demo explicitly refreshes only its controlled synthetic records.

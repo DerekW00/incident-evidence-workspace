@@ -62,11 +62,26 @@ class Command(BaseCommand):
                 ),
             ]
             for kind, seconds, text, skew in rows:
-                Evidence.objects.get_or_create(
+                # These facts are authored with this exact synthetic fixture,
+                # never inferred from raw text or backfilled for arbitrary rows.
+                event_code = (
+                    "error_sample"
+                    if seconds in [60, 240]
+                    else "rollback_complete"
+                    if seconds == 180
+                    else ""
+                )
+                count = {60: 76, 240: 31}.get(seconds)
+                Evidence.objects.update_or_create(
                     incident=inc,
                     kind=kind,
                     at=t + timedelta(seconds=seconds),
-                    defaults={"text": text, "skew_seconds": skew},
+                    defaults={
+                        "text": text,
+                        "skew_seconds": skew,
+                        "event_code": event_code,
+                        "error_count": count,
+                    },
                 )
             RunbookSection.objects.get_or_create(
                 incident=inc,

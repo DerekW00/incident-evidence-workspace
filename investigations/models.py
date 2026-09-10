@@ -27,6 +27,34 @@ class Evidence(models.Model):
     text = models.TextField()
     at = models.DateTimeField()
     skew_seconds = models.IntegerField(default=0)
+    event_code = models.CharField(
+        max_length=24,
+        default="",
+        choices=[
+            ("", "Unknown"),
+            ("error_sample", "Error count sample"),
+            ("rollback_complete", "Rollback record"),
+        ],
+    )
+    error_count = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(event_code="", error_count__isnull=True)
+                    | models.Q(
+                        event_code="error_sample", kind="log", error_count__isnull=False
+                    )
+                    | models.Q(
+                        event_code="rollback_complete",
+                        kind="config",
+                        error_count__isnull=True,
+                    )
+                ),
+                name="valid_synthetic_event_facts",
+            )
+        ]
 
 
 class RunbookSection(models.Model):

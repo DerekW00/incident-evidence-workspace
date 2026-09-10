@@ -91,20 +91,37 @@ def fixture_result(scope: Scope | SourceBundle) -> str:
     ]
     deployments = [r.id for r in list_deployments(scope)]
     logs = search_logs(scope, "", 100)
-    spike = [r.id for r in logs if "error" in r.text.lower() or "5xx" in r.text.lower()]
+    positive_errors = [
+        r.id
+        for r in logs
+        if r.event_code == "error_sample"
+        and type(r.error_count) is int
+        and r.error_count > 0
+    ]
+    rollbacks = [
+        r
+        for r in rows
+        if r.kind == "config"
+        and r.event_code == "rollback_complete"
+        and r.error_count is None
+    ]
     contrary = [
-        r.id for r in logs if r.id in spike and "after rollback" in r.text.lower()
+        r.id
+        for r in logs
+        if r.id in positive_errors and any(rollback.at < r.at for rollback in rollbacks)
     ]
     hypotheses = []
-    if deployments and spike:
+    if deployments and positive_errors:
         hypotheses = [
             {
                 "text": (
-                    "A deployment and error observations coexist in the selected window. A scoped log reports errors after rollback, weakening the deployment-cause hypothesis. Root cause remains unconfirmed."
+                    "A deployment and positive typed error samples coexist in the selected window. Error sample source timestamps follow a scoped rollback record, weakening the deployment-cause hypothesis. Clock skew can affect temporal ordering; root cause remains unconfirmed."
                     if contrary
-                    else "A deployment and error observations coexist in the selected window. This supports only a working hypothesis; root cause remains unconfirmed."
+                    else "A deployment and positive typed error samples coexist in the selected window. This supports only a working hypothesis; root cause remains unconfirmed."
                 ),
-                "citations": deployments + spike,
+                "citations": deployments
+                + positive_errors
+                + ([r.id for r in rollbacks] if contrary else []),
                 "contradictions": contrary,
                 "confidence": "weakened" if contrary else "unconfirmed",
             }

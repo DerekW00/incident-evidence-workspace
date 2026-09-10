@@ -7,3 +7,5 @@ Tests exercise real second-tenant sources, half-open end exclusion, foreign runb
 Browser test logs in, selects window, starts, refreshes during work, invokes the real management worker, inspects persisted contradiction, saves/downloads a brief, then starts/cancels a second investigation and refreshes terminal state. Screenshots and RED/GREEN logs live outside source in python-evidence/incident-evidence-workspace. The implementation report records exact results and commit.
 
 Round-one regressions cover deployment-only/pre-rollback windows, a400-row prefix before an oversized hidden deployment, omitted-kind/truncation disclosure, rejection of non-visible citations and zero secondary database reads during provider/validation. Browser now downloads the saved brief and asserts filename and reviewer content.
+
+Round-two regressions use the exact healthy/negated prose strings, preserve raw inspection, verify zero-count/unknown rows cannot create hypotheses, require typed prior rollback timestamps, and migrate a legacy positive-prose row from0001 to0002 without invented facts.
