@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 import pytest
 from playwright.sync_api import sync_playwright
+from tests.browser_artifacts import evidence_directory
 
 
 @pytest.mark.skipif(
@@ -40,9 +41,7 @@ def test_saved_timeline_review_and_cancellation():
         assert (
             "Deployment correlation is weakened" in Path(downloaded.path()).read_text()
         )
-        dest = Path(
-            "/Users/dw/code/portfolio-python/python-evidence/incident-evidence-workspace"
-        )
+        dest = evidence_directory()
         page.screenshot(path=str(dest / "timeline-browser.png"), full_page=True)
         page.screenshot(path=str(dest / "workflow-review.jpg"), type="jpeg", quality=70)
         page.goto("http://127.0.0.1:8103/")

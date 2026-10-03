@@ -14,11 +14,11 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ.get("PGDATABASE", "incident_evidence"),
-        "USER": "dw",
+        "USER": os.environ.get("PGUSER", "dw"),
         "HOST": os.environ.get(
             "PGHOST", "/Users/dw/code/portfolio-python/.runtime/pg16/incident/socket"
         ),
-        "PORT": "15533",
+        "PORT": os.environ.get("PGPORT", "15533"),
     }
 }
 MIDDLEWARE = [
@@ -52,3 +52,6 @@ DEMO_MODE = os.environ.get("DEMO_MODE") == "1"
 LOGIN_REDIRECT_URL = "/"
 
 TIME_ZONE = "UTC"
+
+SESSION_COOKIE_NAME = "incident_evidence_session"
+CSRF_COOKIE_NAME = "incident_evidence_csrf"

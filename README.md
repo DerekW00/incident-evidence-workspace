@@ -29,3 +29,7 @@ make browser
 The VPS verification sources `/Users/dw/code/portfolio-python/execution/runtime-env.sh`; PostgreSQL has TCP disabled and uses a private Unix socket. Browser tests use only loopback. See docs for limits, decisions, provenance and measured evidence.
 
 After upgrading an existing synthetic checkout to structured event facts, run migrate then seed_demo again before evaluate/browser. Migration intentionally leaves preexisting facts unknown; seed_demo explicitly refreshes only its controlled synthetic records.
+
+Browser artifacts default to a newly created writable temporary directory. To retain them use `BROWSER_EVIDENCE_DIR="$PWD/.browser-evidence" make browser` (ignored locally), or supply any writable destination. Verified VPS runs explicitly supply the canonical external evidence path. PostgreSQL PGUSER/PGPORT overrides are honored; defaults remain dw/15533 for the private VPS runtime.
+
+Same-host demo cookies use `incident_evidence_session` and `incident_evidence_csrf`, so the three loopback products can retain separate sessions and CSRF forms across ports. Cookie domain/path and CSRF enforcement retain their normal Django scope.
